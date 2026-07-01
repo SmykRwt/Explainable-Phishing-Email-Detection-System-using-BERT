@@ -1,6 +1,1 @@
-transformers>=4.38
-torch>=2.0
-streamlit>=1.32
-scikit-learn>=1.4
-pandas
-numpy
+-r backend/requirements.txt

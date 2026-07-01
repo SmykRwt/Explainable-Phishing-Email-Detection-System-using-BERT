@@ -1,60 +1,163 @@
-# 🛡️ Explainable Phishing Email Detection System
+# Enterprise GenAI Phishing Intelligence Platform
 
-DistilBERT-based spam/phishing detector with token-level explainability.
+AI-powered phishing analysis platform that combines classical machine learning, transformer-based NLP, rule-based threat detection, and LLM reasoning to generate explainable phishing intelligence reports.
 
-## 📁 Files
-| File | Purpose |
-|---|---|
-| `train_bert.py` | Fine-tune DistilBERT on your spam.csv dataset |
-| `predictor.py` | Inference engine + explainability + feature engineering |
-| `app.py` | Streamlit web interface |
-| `requirements.txt` | Dependencies |
+---
 
-## 🚀 Setup & Run
+## 🏗️ System Architecture
 
+```mermaid
+graph TD
+    User([User / Analyst]) -->|Interact| Frontend[Streamlit Dashboard]
+    Frontend -->|HTTP Requests| Backend[FastAPI backend]
+    
+    subgraph Core Engines
+        Backend -->|Extract Text| OCR[OCR Service - Tesseract]
+        Backend -->|Run Heuristics| Rules[Heuristic Rules Engine]
+        Backend -->|Verify Cryptography| Headers[Header Analyzer - SPF/DKIM/DMARC]
+        Backend -->|Scan Domains| URLs[URL Typosquatting Analyzer]
+        Backend -->|AI Classification| ML[Hybrid ML Engine - DistilBERT & SVM]
+    end
+
+    Backend -->|Compute composite grade| Scorer[Dynamic Threat Scorer]
+    Scorer -->|Compile telemetry| LLM[GenAI Analyst - Ollama / OpenAI]
+    Backend -->|Persist Logs| DB[(Database - PostgreSQL / SQLite)]
+    
+    LLM -->|Generate explainable security brief| User
+```
+
+---
+
+## 📁 Repository Structure
+
+```text
+enterprise-genai-phishing-platform/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── endpoints/
+│   │   │       ├── analysis.py       # Scans (JSON, EML upload, screenshot OCR)
+│   │   │       └── history.py        # Pagination, dashboard aggregation
+│   │   ├── core/
+│   │   │   ├── config.py             # Settings using Pydantic Settings
+│   │   │   └── dependencies.py       # Singletons (Predictor, LLMAnalyst)
+│   │   ├── database/
+│   │   │   ├── models.py             # Declarative SQLAlchemy Database Schemas
+│   │   │   └── session.py            # DB Sessions (PostgreSQL / SQLite fallback)
+│   │   ├── llm/
+│   │   │   └── client.py             # GenAI report builder (Ollama / OpenAI)
+│   │   ├── ml/
+│   │   │   ├── classical/
+│   │   │   │   └── pipeline.py       # TF-IDF + Classical wrappers (XGB, RF, SVM)
+│   │   │   ├── distilbert/
+│   │   │   │   └── pipeline.py       # PyTorch sequence classification training
+│   │   │   ├── inference/
+│   │   │   │   └── predictor.py      # Attribution and evaluation logic
+│   │   │   ├── benchmark.py          # Baseline comparisons and chart exports
+│   │   │   └── dataset.py            # Clean, stratified train/val/test splits
+│   │   ├── rules/
+│   │   │   └── engine.py             # Heuristics threat checks (12 security rules)
+│   │   ├── schemas/
+│   │   │   └── analysis.py           # Standardized Pydantic DTO validation
+│   │   ├── services/
+│   │   │   ├── email_parser.py       # Plain text / EML structure parsing
+│   │   │   ├── header_analyzer.py    # SPF/DKIM/DMARC metadata checks
+│   │   │   ├── ocr_service.py        # Tesseract screenshot text extraction
+│   │   │   └── threat_scorer.py      # Multimodal aggregate risk indexer
+│   │   └── main.py                   # FastAPI initialization
+│   └── tests/                        # 11 unit & integration tests
+│
+├── frontend/
+│   └── streamlit_app.py              # Dashboard visual interface
+│
+├── docker/
+│   └── backend.Dockerfile            # Multi-stage image build setup
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml                    # Automated tests execution
+│
+├── docker-compose.yml                # Orchestrates DB, MLflow, and services
+└── spam.csv                          # Base training dataset
+```
+
+---
+
+## 🚀 Key Modules Built
+
+### 1. Hybrid Machine Learning & AI
+* **DistilBERT (Transformers)**: Fine-tuned deep learning sequence classification (achieving **99.28% accuracy / 97.26% F1 score** on CPU).
+* **Explainable AI (XAI)**: Integrated Gradients calculation highlighting which specific words influenced the transformer model's prediction.
+* **Classical ML Ensembles**: Logistic Regression, SVM, Random Forest, and XGBoost wrappers for statistical keyword matching.
+
+### 2. Heuristics & Scoring Engine
+* **12 Core Rules**: Analyzes urgencies, credential harvesting cues, prize lures, false invoices, quishing (QR codes), call-to-action prompts, and suspicious attachments.
+* **Dynamic Scorer**: Re-allocates weights dynamically when specific features (like URLs or headers) are not applicable (e.g. plain text scans), preventing under-scoring.
+* **AI-Confidence Floor**: Ensures highly confident transformer classifications (>=85%) are prioritized as High Phishing Risk even if rules aren't triggered.
+
+### 3. URL & Header Scanning
+* **Domain Checkers**: Typosquatting detection using Levenshtein distance matching against popular brand domains.
+* **Authentication Audits**: Extracts and validates SPF, DKIM, and DMARC headers.
+* **Trusted Sender Discount**: Automatically discounts risk rating for cryptographically authenticated, official brand senders (e.g. `@microsoft.com`).
+
+### 4. Generative AI Security Analyst
+* Generates security summaries, indicator mappings, and playbooks via local **Ollama** or **OpenAI**. 
+* Includes a built-in deterministic fallback generator in case connections time out.
+
+---
+
+## 🔬 Testing & Verification
+
+We wrote 11 unit and integration tests covering the rules engine, URL analyzer, email parser, and API routers.
+
+Run the test suite locally:
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Put your spam.csv in the same folder
-#    (columns: v1=label, v2=text)
-
-# 3. Train the model  (~10–20 min on CPU, ~3 min on GPU)
-python train_bert.py
-
-# 4. Launch the app
-streamlit run app.py
+python -m pytest backend/tests
 ```
 
-## 🧠 Architecture
+All **11/11 tests pass successfully**, verifying that the database engine, endpoints, and threat scorers run correctly.
 
+---
+
+## 🛠 Running the Platform
+
+### Option A: Run via Docker Compose (Recommended)
+This starts all components (PostgreSQL, MLflow metrics tracker, FastAPI, and Streamlit) with Tesseract OCR pre-installed:
+```bash
+docker compose up --build
 ```
-Input Text
-    │
-    ├──► DistilBERT (fine-tuned)  ──► Spam/Ham probability
-    │         │
-    │         └──► Gradient Attribution ──► Token importance chips
-    │
-    └──► Feature Engineering
-              ├── URL length & domain mismatch
-              ├── Urgency word patterns
-              ├── Caps ratio, exclamation count
-              └── Brand impersonation detection
+Open **`http://localhost:8501`** in your browser.
+
+---
+
+### Option B: Run Locally (Without Docker)
+
+#### 1. Setup Virtual Environment & Dependencies
+```bash
+python -m venv venv
+# On Windows:
+.\venv\Scripts\Activate.ps1
+# On Mac/Linux:
+source venv/bin/activate
+
+pip install -r backend/requirements.txt
 ```
 
-## 🔍 Why BERT is better than TF-IDF + Random Forest
+#### 2. Run Training Benchmarks (Optional)
+This trains your models on the base dataset, saves the checkpoints (`best_model.pkl` and `./bert_model`), and exports comparison charts to the `experiments/` directory:
+```bash
+python -m backend.app.ml.benchmark
+```
 
-| | Old (TF-IDF + RF) | New (BERT) |
-|---|---|---|
-| Context understanding | ❌ Bag of words | ✅ Full sentence context |
-| Short message detection | ❌ Needs 4-5 keywords | ✅ Works with 2-3 words |
-| Preprocessing consistency | ❌ Train/predict mismatch | ✅ Tokenizer handles it |
-| Explainability | ❌ None | ✅ Token attribution |
-| URL awareness | ❌ None | ✅ Domain mismatch detection |
+#### 3. Start FastAPI Backend Server
+```bash
+uvicorn backend.app.main:app --reload
+```
+*Runs at `http://127.0.0.1:8000`.*
 
-## 🐞 Bugs fixed from original code
-
-1. **Preprocessing mismatch** — `app.py` used bare `re.sub` but model was trained on NLTK-stemmed tokens → fixed by BERT's own tokenizer
-2. **No class balancing** — 6.5:1 ham:spam ratio made RF biased → fixed with `CrossEntropyLoss(weight=...)`
-3. **No bigrams** — short spam messages missed → BERT captures n-gram context natively
-4. **No URL/feature engineering** → added via `predictor.py`
+#### 4. Start Streamlit Frontend
+In a new terminal window:
+```bash
+streamlit run frontend/streamlit_app.py
+```
+*Runs at `http://localhost:8501`.*

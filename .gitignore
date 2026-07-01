@@ -1,8 +1,16 @@
 # Ignore the trained model directory
 bert_model/
+best_model.pkl
 
-# Ignore Python cache and virtual environments
+# Ignore Python cache, test cache, and virtual environments
 __pycache__/
 *.pyc
 venv/
 .env
+.pytest_cache/
+
+# Ignore local databases and tracking runs
+*.sqlite
+mlflow.db
+mlruns/
+experiments/*.png
