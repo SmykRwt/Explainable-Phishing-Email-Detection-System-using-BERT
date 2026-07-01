@@ -65,17 +65,12 @@ enterprise-genai-phishing-platform/
 │   │   │   ├── ocr_service.py        # Tesseract screenshot text extraction
 │   │   │   └── threat_scorer.py      # Multimodal aggregate risk indexer
 │   │   └── main.py                   # FastAPI initialization
-│   └── tests/                        # 11 unit & integration tests
-│
+│   
 ├── frontend/
 │   └── streamlit_app.py              # Dashboard visual interface
 │
 ├── docker/
 │   └── backend.Dockerfile            # Multi-stage image build setup
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml                    # Automated tests execution
 │
 ├── docker-compose.yml                # Orchestrates DB, MLflow, and services
 └── spam.csv                          # Base training dataset
@@ -103,19 +98,6 @@ enterprise-genai-phishing-platform/
 ### 4. Generative AI Security Analyst
 * Generates security summaries, indicator mappings, and playbooks via local **Ollama** or **OpenAI**. 
 * Includes a built-in deterministic fallback generator in case connections time out.
-
----
-
-## 🔬 Testing & Verification
-
-We wrote 11 unit and integration tests covering the rules engine, URL analyzer, email parser, and API routers.
-
-Run the test suite locally:
-```bash
-python -m pytest backend/tests
-```
-
-All **11/11 tests pass successfully**, verifying that the database engine, endpoints, and threat scorers run correctly.
 
 ---
 
