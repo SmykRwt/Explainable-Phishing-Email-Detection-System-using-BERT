@@ -1,4 +1,4 @@
-# PhishIntel
+# PhishIntel AI
 
 ### Explainable Multimodal Phishing Intelligence and Threat Auditing System using DistilBERT
 
