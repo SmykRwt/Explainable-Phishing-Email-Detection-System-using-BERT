@@ -136,15 +136,17 @@ class LLMAnalyst:
     def _generate_fallback_report(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Produces a clean threat intelligence summary when LLMs are offline."""
         risk_score = payload["composite_risk_score"]
+        verdict = payload["prediction_verdict"]
         rules = payload["rules_triggered"]
         urls = payload["urls_analyzed"]
         headers = payload["headers_analysis"]
         
-        threat_type = "Potential Phishing Scam"
+        threat_type = "Safe Email"
         severity = "Low"
         
         if risk_score >= 70.0:
             severity = "High"
+            threat_type = "Potential Phishing Scam"
             if any("harvest" in r["name"].lower() for r in rules):
                 threat_type = "Credential Harvesting"
             elif any("imperson" in r["name"].lower() for r in rules):
@@ -172,14 +174,23 @@ class LLMAnalyst:
             summary += f"Found {len(urls)} URLs in the body, with {susp_count} flagged as suspicious. "
         if headers["findings"]:
             summary += f"Email header verification raised discrepancies: {', '.join(headers['findings'])}."
+        if not rules and not any(u["is_suspicious"] for u in urls) and not headers["findings"]:
+            summary += "No phishing rules, suspicious URLs, or header anomalies were detected."
 
-        recommendations = "Verify sender domain legitimacy before responding. Do not click links or submit login credentials. "
+        recommendations = "No immediate phishing action is required based on the available indicators. "
         if severity in ["High", "Critical"]:
+            recommendations = "Verify sender domain legitimacy before responding. Do not click links or submit login credentials. "
             recommendations += "Forward this email to your organization's security operations center (SOC) immediately."
-        else:
+        elif severity == "Medium":
+            recommendations = "Verify sender domain legitimacy before responding. Do not click links or submit login credentials. "
             recommendations += "Exercise caution when interacting with links and attachments."
+        else:
+            recommendations += "Continue normal caution for unknown senders."
 
-        exec_summary = f"This email has been marked as {severity.upper()} risk ({risk_score}%) due to detected phishing indicators. Users should not interact with it."
+        if "safe" in verdict.lower():
+            exec_summary = f"This message is classified as SAFE with a low risk score of {risk_score}%. No phishing indicators were detected."
+        else:
+            exec_summary = f"This email has been marked as {severity.upper()} risk ({risk_score}%) due to detected phishing indicators. Users should not interact with it."
 
         return {
             "threat_type": threat_type,

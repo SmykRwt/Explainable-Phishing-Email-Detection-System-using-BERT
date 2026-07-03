@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Explainable Phishing Detection Platform using ML, BERT, Rules, and GenAI summaries.",
+    description="PhishIntel: Explainable Multimodal Phishing Intelligence and Threat Auditing System using DistilBERT",
     version="1.0.0",
     lifespan=lifespan
 )

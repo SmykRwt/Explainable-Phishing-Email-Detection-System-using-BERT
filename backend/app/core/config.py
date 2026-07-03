@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Enterprise GenAI Phishing Intelligence Platform"
+    PROJECT_NAME: str = "PhishIntel"
     API_V1_STR: str = "/api/v1"
     
     # Database Settings

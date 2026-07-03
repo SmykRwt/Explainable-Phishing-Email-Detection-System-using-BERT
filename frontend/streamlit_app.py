@@ -9,7 +9,7 @@ import os
 
 # Set up page configurations
 st.set_page_config(
-    page_title="Enterprise GenAI Phishing Intelligence Platform",
+    page_title="PhishIntel - Explainable Phishing Intelligence",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -48,8 +48,8 @@ else:
     API_BASE = "http://localhost:8000/api/v1"
 
 # Sidebar Navigation
-st.sidebar.title("🛡️ Phishing Platform")
-st.sidebar.markdown("*GenAI Threat Intelligence*")
+st.sidebar.title("🛡️ PhishIntel")
+st.sidebar.markdown("*Explainable AI Security*")
 st.sidebar.divider()
 
 nav = st.sidebar.radio(
@@ -380,6 +380,25 @@ elif nav == "📊 Dashboard Analytics":
                 st.pyplot(fig)
             else:
                 st.info("No rule triggers logged yet.")
+
+        st.divider()
+
+        st.subheader("Recent Previous Analyses")
+        recent = stats.get("recent_analyses", [])
+        if recent:
+            recent_rows = []
+            for item in recent:
+                recent_rows.append({
+                    "ID": item["id"],
+                    "Date": datetime.fromisoformat(item["created_at"].replace("Z", "")).strftime("%Y-%m-%d %H:%M:%S"),
+                    "Verdict": item["prediction_label"],
+                    "Risk Score": f"{item['risk_score']}%",
+                    "Latency": f"{item['processing_time']:.3f}s",
+                    "Text Preview": item["text"][:90] + ("..." if len(item["text"]) > 90 else "")
+                })
+            st.dataframe(pd.DataFrame(recent_rows), use_container_width=True, hide_index=True)
+        else:
+            st.info("No saved analyses yet. Run a scan once and it will appear here in future sessions.")
 
         st.divider()
         
