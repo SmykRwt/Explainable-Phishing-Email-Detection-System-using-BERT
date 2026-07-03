@@ -272,6 +272,5 @@ Authentication, per-user history isolation, role-based access, and a UI clear-hi
 - Better model artifact management
 - Additional phishing datasets and evaluation reports
 
-## Disclaimer
-
-This project is for educational and research purposes. It can assist analysts by highlighting suspicious signals, but final security decisions should be validated with trusted security tools and human review.
+## Author
+Samyak Rawat | AI/ML Engineer | Thapar Institute of Engineering and Technology
